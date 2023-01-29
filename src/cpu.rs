@@ -425,6 +425,110 @@ mod test {
         assert_eq!(cpu.register_a, 0x55);
    }
 
+   #[test]
+   fn test_lda_b9(){
+        let mut cpu = CPU::new();
+        cpu.mem_write_u16(0x1000, 0x55);
+
+        cpu.load_and_run(vec![0xa9, 0x01, 0xa8, 0xb9, 0xff, 0x0f, 0x00]);
+
+        assert_eq!(cpu.register_a, 0x55);
+    }
+
+    #[test]
+    fn test_lda_a1(){
+        let mut cpu = CPU::new();
+        cpu.mem_write_u16(0x10, 0xCCCC);
+        cpu.mem_write_u16(0xCCCC, 0x0a);
+
+        cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa1, 0x0f, 0x00]);
+
+        assert_eq!(cpu.register_a, 0x0a);
+    }
+
+    #[test]
+    fn test_lda_b1(){
+        let mut cpu = CPU::new();
+        cpu.mem_write_u16(0x10, 0xCCCB);
+        cpu.mem_write_u16(0xCCCC, 0x0a);
+
+        cpu.load_and_run(vec![0xa9, 0x01, 0xa8, 0xb1, 0x10, 0x00]);
+
+        assert_eq!(cpu.register_a, 0x0a);
+    }
+
+   #[test]
+   fn test_sta_85(){
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![0xa9, 0x0a, 0x85, 0xFF, 0x00]);
+
+        let value = cpu.mem_read(0xFF);
+
+        assert_eq!(value, 0x0a);
+   }
+
+   #[test]
+   fn test_sta_95(){
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa9, 0x0a, 0x95, 0xFE, 0x00]);
+
+        let value = cpu.mem_read(0xFF);
+
+        assert_eq!(value, 0x0a);
+   }
+
+   #[test]
+   fn test_sta_8d(){
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![0xa9, 0x0a, 0x8D, 0xFF, 0x10, 0x00]);
+
+        let value = cpu.mem_read(0x10FF);
+
+        assert_eq!(value, 0x0a);
+    }
+
+   #[test]
+   fn test_sta_9d(){
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa9, 0x0a, 0x9D, 0xFE, 0x10, 0x00]);
+
+        let value = cpu.mem_read_u16(0x10FF);
+
+        assert_eq!(value, 0x0a);
+   }
+
+   #[test]
+   fn test_sta_99(){
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![0xa9, 0x01, 0xa8, 0xa9, 0x0a, 0x99, 0xFE, 0x10, 0x00]);
+
+        let value = cpu.mem_read_u16(0x10FF);
+
+        assert_eq!(value, 0x0a);
+   }
+
+   #[test]
+   fn test_sta_81(){
+        let mut cpu = CPU::new();
+        cpu.mem_write_u16(0x10, 0xCCCC);
+        cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa9, 0x0a, 0x81, 0x0F, 0x00]);
+
+        let value = cpu.mem_read_u16(0xCCCC);
+
+        assert_eq!(value, 0x0a);
+   }
+
+   #[test]
+   fn test_sta_91(){
+        let mut cpu = CPU::new();
+        cpu.mem_write_u16(0x10, 0xCCCB);
+        cpu.load_and_run(vec![0xa9, 0x01, 0xa8, 0xa9, 0x0a, 0x91, 0x10, 0x00]);
+
+        let value = cpu.mem_read_u16(0xCCCC);
+
+        assert_eq!(value, 0x0a);
+   }
+
 //    #[test]
 //    fn test_lda_b9(){
 //         let mut cpu =  CPU::new();
