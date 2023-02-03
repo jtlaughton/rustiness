@@ -1081,6 +1081,142 @@ fn test_cpy_cc() {
     assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
 }
 
+/* DEC command tests */
+
+#[test]
+fn test_dec_c6_overflow() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0x00);
+    cpu.load_and_run(vec![0xc6, 0x10, 0xc6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0xFE);
+}
+
+#[test]
+fn test_dec_c6_flags_neg() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFF);
+    cpu.load_and_run(vec![0xc6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0xFE);
+
+    assert!(cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_dec_c6_flags_zero() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0x01);
+    cpu.load_and_run(vec![0xc6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0x00);
+
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_dec_d6() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFF);
+    cpu.load_and_run(vec![0xa2, 0x01, 0xd6, 0x0F, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0xFE);
+}
+
+#[test]
+fn test_dec_ce() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0xFF);
+    cpu.load_and_run(vec![0xce, 0x00, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x1000);
+
+    assert_eq!(data, 0xFE);
+}
+
+#[test]
+fn test_dec_de() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0xFF);
+    cpu.load_and_run(vec![0xa2, 0x01, 0xde, 0xFF, 0x0F, 0x00]);
+
+    let data = cpu.mem_read(0x1000);
+
+    assert_eq!(data, 0xFE);
+}
+
+/* DEX command tests */
+#[test]
+fn test_dex_ca_overflow() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa2, 0x00, 0xca, 0xca, 0x00]);
+
+    assert_eq!(cpu.register_x, 0xFE);
+}
+
+#[test]
+fn test_dex_ca_flags_neg() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa2, 0xFF, 0xca, 0x00]);
+
+    assert_eq!(cpu.register_x, 0xFE);
+
+    assert!(cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_dex_ca_flags_zero() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa2, 0x01, 0xca, 0x00]);
+
+    assert_eq!(cpu.register_x, 0x00);
+
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
+/* DEY command tests */
+#[test]
+fn test_dey_88_overflow() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0x00, 0x88, 0x88, 0x00]);
+
+    assert_eq!(cpu.register_y, 0xFE);
+}
+
+#[test]
+fn test_dey_88_flags_neg() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0xFF, 0x88, 0x00]);
+
+    assert_eq!(cpu.register_y, 0xFE);
+
+    assert!(cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_dey_88_flags_zero() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0x01, 0x88, 0x00]);
+
+    assert_eq!(cpu.register_y, 0x00);
+
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
 //    #[test]
 //    fn test_lda_b9(){
 //         let mut cpu =  CPU::new();

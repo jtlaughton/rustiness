@@ -54,6 +54,9 @@ pub enum OpCodeCat {
     CMP,
     CPX,
     CPY,
+    DEC,
+    DEX,
+    DEY,
     LDX,
     LDY,
     TAX,
@@ -635,6 +638,60 @@ impl CPU {
                 mode: AddressingMode::Absolute,
             },
 
+            /* DEC opcodes */
+            0xC6 => OpCode {
+                code: 0xC6,
+                code_name: "DEC",
+                match_code: OpCodeCat::DEC,
+                bytes: 2,
+                cycles: 5,
+                mode: AddressingMode::ZeroPage,
+            },
+            0xD6 => OpCode {
+                code: 0xC6,
+                code_name: "DEC",
+                match_code: OpCodeCat::DEC,
+                bytes: 2,
+                cycles: 6,
+                mode: AddressingMode::ZeroPage_X,
+            },
+            0xCE => OpCode {
+                code: 0xC6,
+                code_name: "DEC",
+                match_code: OpCodeCat::DEC,
+                bytes: 3,
+                cycles: 6,
+                mode: AddressingMode::Absolute,
+            },
+            0xDE => OpCode {
+                code: 0xC6,
+                code_name: "DEC",
+                match_code: OpCodeCat::DEC,
+                bytes: 3,
+                cycles: 7,
+                mode: AddressingMode::Absolute_X,
+            },
+
+            /* DEX opcodes */
+            0xCA => OpCode {
+                code: 0xCA,
+                code_name: "DEX",
+                match_code: OpCodeCat::DEX,
+                bytes: 1,
+                cycles: 2,
+                mode: AddressingMode::Implied,
+            },
+
+            /* DEY opcodes */
+            0x88 => OpCode {
+                code: 0x88,
+                code_name: "DEY",
+                match_code: OpCodeCat::DEY,
+                bytes: 1,
+                cycles: 2,
+                mode: AddressingMode::Implied,
+            },
+
             /* LDX Opcodes */
             0xA2 => OpCode {
                 code: 0xA2,
@@ -934,6 +991,27 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
+    fn dec(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        let value = value.wrapping_sub(1);
+
+        self.mem_write(addr, value);
+
+        self.update_zero_and_negative_flags(value);
+    }
+
+    fn dex(&mut self) {
+        self.register_x = self.register_x.wrapping_sub(1);
+        self.update_zero_and_negative_flags(self.register_x);
+    }
+
+    fn dey(&mut self) {
+        self.register_y = self.register_y.wrapping_sub(1);
+        self.update_zero_and_negative_flags(self.register_y);
+    }
+
     fn compare(&mut self, mode: &AddressingMode, compare_with: u8) {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
@@ -1109,6 +1187,18 @@ impl CPU {
 
                 OpCodeCat::CPY => {
                     self.compare(&val.mode, self.register_y);
+                }
+
+                OpCodeCat::DEC => {
+                    self.dec(&val.mode);
+                }
+
+                OpCodeCat::DEX => {
+                    self.dex();
+                }
+
+                OpCodeCat::DEY => {
+                    self.dey();
                 }
 
                 OpCodeCat::LDX => {
