@@ -30,6 +30,9 @@ pub enum OpCodeCat {
     DEC,
     DEX,
     DEY,
+    EOR,
+    INC,
+    INY,
     LDX,
     LDY,
     TAX,
@@ -729,6 +732,116 @@ impl EmmulationHelpers {
                 bytes: 3,
                 cycles: 4, /* +1 if page crossed */
                 mode: AddressingMode::Absolute_X,
+            },
+
+            /* EOR opcodes */
+            0x49 => OpCode {
+                code: 0x49,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 2,
+                cycles: 2,
+                mode: AddressingMode::Immediate,
+            },
+            0x45 => OpCode {
+                code: 0x45,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 2,
+                cycles: 3,
+                mode: AddressingMode::ZeroPage,
+            },
+            0x55 => OpCode {
+                code: 0x55,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 2,
+                cycles: 4,
+                mode: AddressingMode::ZeroPage_X,
+            },
+            0x4D => OpCode {
+                code: 0x4D,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 3,
+                cycles: 4,
+                mode: AddressingMode::Absolute,
+            },
+            0x5D => OpCode {
+                code: 0x5D,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 3,
+                cycles: 4, /*+1 if page crossed */
+                mode: AddressingMode::Absolute_X,
+            },
+            0x59 => OpCode {
+                code: 0x59,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 3,
+                cycles: 4, /*+1 if page crossed */
+                mode: AddressingMode::Absolute_Y,
+            },
+            0x41 => OpCode {
+                code: 0x41,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 2,
+                cycles: 6,
+                mode: AddressingMode::Indirect_X,
+            },
+            0x51 => OpCode {
+                code: 0x51,
+                code_name: "EOR",
+                match_code: OpCodeCat::EOR,
+                bytes: 2,
+                cycles: 5, /*+1 if page crossed */
+                mode: AddressingMode::Indirect_Y,
+            },
+
+            /* INC opcodes */
+            0xE6 => OpCode {
+                code: 0xE6,
+                code_name: "INC",
+                match_code: OpCodeCat::INC,
+                bytes: 2,
+                cycles: 5,
+                mode: AddressingMode::ZeroPage,
+            },
+            0xF6 => OpCode {
+                code: 0xF6,
+                code_name: "INC",
+                match_code: OpCodeCat::INC,
+                bytes: 2,
+                cycles: 6,
+                mode: AddressingMode::ZeroPage_X,
+            },
+            0xEE => OpCode {
+                code: 0xEE,
+                code_name: "INC",
+                match_code: OpCodeCat::INC,
+                bytes: 3,
+                cycles: 6,
+                mode: AddressingMode::Absolute,
+            },
+            0xFE => OpCode {
+                code: 0xFE,
+                code_name: "INC",
+                match_code: OpCodeCat::INC,
+                bytes: 3,
+                cycles: 7,
+                mode: AddressingMode::Absolute_X,
+            },
+
+            /* INY Opcodes */
+            0xC8 => OpCode {
+                code: 0xC8,
+                code_name: "INY",
+                match_code: OpCodeCat::INY,
+                bytes: 1,
+                cycles: 2,
+                mode: AddressingMode::Immediate,
             },
 
             /* Default case so it still increments the program counter */

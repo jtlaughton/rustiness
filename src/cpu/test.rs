@@ -275,15 +275,24 @@ fn test_and_35() {
 fn test_and_2d() {
     let mut cpu = CPU::new();
     cpu.mem_write_u16(0x1000, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0b0000_0110, 0x2d, 0x00, 0x10, 0x00]);
+
+    assert_eq!(cpu.register_a, 4);
+}
+
+#[test]
+fn test_and_3d() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x1000, 0b0000_0100);
     cpu.load_and_run(vec![
         0xa9,
         0x01,
         0xaa,
         0xa9,
         0b0000_0110,
-        0x2d,
-        0x00,
-        0x10,
+        0x3d,
+        0xFF,
+        0x0F,
         0x00,
     ]);
 
@@ -300,9 +309,9 @@ fn test_and_39() {
         0xa8,
         0xa9,
         0b0000_0110,
-        0x2d,
-        0x00,
-        0x10,
+        0x39,
+        0xFF,
+        0x0F,
         0x00,
     ]);
 
@@ -1210,6 +1219,205 @@ fn test_dey_88_flags_neg() {
 fn test_dey_88_flags_zero() {
     let mut cpu = CPU::new();
     cpu.load_and_run(vec![0xa0, 0x01, 0x88, 0x00]);
+
+    assert_eq!(cpu.register_y, 0x00);
+
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
+/* EOR command test cases */
+#[test]
+fn test_eor_49() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa9, 0b0000_0110, 0x49, 0b0000_0100, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_45() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0b0000_0110, 0x45, 0x10, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_55() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa9, 0b0000_0110, 0x55, 0x0f, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_4d() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x1000, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0b0000_0110, 0x4d, 0x00, 0x10, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_5d() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x1000, 0b0000_0100);
+    cpu.load_and_run(vec![
+        0xa9,
+        0x01,
+        0xaa,
+        0xa9,
+        0b0000_0110,
+        0x5d,
+        0xFF,
+        0x0F,
+        0x00,
+    ]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_59() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x1000, 0b0000_0100);
+    cpu.load_and_run(vec![
+        0xa9,
+        0x01,
+        0xa8,
+        0xa9,
+        0b0000_0110,
+        0x59,
+        0xFF,
+        0x0F,
+        0x00,
+    ]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_41() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x10, 0xCCCC);
+    cpu.mem_write_u16(0xCCCC, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0x01, 0xaa, 0xa9, 0b0000_0110, 0x41, 0x0f, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+#[test]
+fn test_eor_51() {
+    let mut cpu = CPU::new();
+    cpu.mem_write_u16(0x10, 0xCCCB);
+    cpu.mem_write_u16(0xCCCC, 0b0000_0100);
+    cpu.load_and_run(vec![0xa9, 0x01, 0xa8, 0xa9, 0b0000_0110, 0x51, 0x10, 0x00]);
+
+    assert_eq!(cpu.register_a, 2);
+}
+
+/* INC command tests */
+
+#[test]
+fn test_inc_e6_overflow() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFF);
+    cpu.load_and_run(vec![0xe6, 0x10, 0xe6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0x01);
+}
+
+#[test]
+fn test_inc_e6_flags_neg() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFE);
+    cpu.load_and_run(vec![0xe6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0xFF);
+
+    assert!(cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_inc_e6_flags_zero() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFF);
+    cpu.load_and_run(vec![0xe6, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0x00);
+
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_inc_f6() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0xFD);
+    cpu.load_and_run(vec![0xa2, 0x01, 0xf6, 0x0F, 0x00]);
+
+    let data = cpu.mem_read(0x10);
+
+    assert_eq!(data, 0xFE);
+}
+
+#[test]
+fn test_inc_ee() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0xFD);
+    cpu.load_and_run(vec![0xee, 0x00, 0x10, 0x00]);
+
+    let data = cpu.mem_read(0x1000);
+
+    assert_eq!(data, 0xFE);
+}
+
+#[test]
+fn test_inc_fe() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0xFD);
+    cpu.load_and_run(vec![0xa2, 0x01, 0xfe, 0xFF, 0x0F, 0x00]);
+
+    let data = cpu.mem_read(0x1000);
+
+    assert_eq!(data, 0xFE);
+}
+
+/* INY command tests */
+#[test]
+fn test_iny_c8_overflow() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0xFF, 0xc8, 0xc8, 0x00]);
+
+    assert_eq!(cpu.register_y, 0x01);
+}
+
+#[test]
+fn test_iny_c8_flags_neg() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0xFD, 0xc8, 0x00]);
+
+    assert_eq!(cpu.register_y, 0xFE);
+
+    assert!(cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_iny_c8_flags_zero() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa0, 0xFF, 0xc8, 0x00]);
 
     assert_eq!(cpu.register_y, 0x00);
 

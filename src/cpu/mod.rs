@@ -274,6 +274,31 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
+    fn eor(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        self.register_a = self.register_a ^ value;
+
+        self.update_zero_and_negative_flags(self.register_a);
+    }
+
+    fn inc(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        let value = value.wrapping_add(1);
+
+        self.mem_write(addr, value);
+
+        self.update_zero_and_negative_flags(value);
+    }
+
+    fn iny(&mut self) {
+        self.register_y = self.register_y.wrapping_add(1);
+        self.update_zero_and_negative_flags(self.register_y);
+    }
+
     fn compare(&mut self, mode: &AddressingMode, compare_with: u8) {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
@@ -461,6 +486,18 @@ impl CPU {
 
                 OpCodeCat::DEY => {
                     self.dey();
+                }
+
+                OpCodeCat::EOR => {
+                    self.eor(&val.mode);
+                }
+
+                OpCodeCat::INC => {
+                    self.inc(&val.mode);
+                }
+
+                OpCodeCat::INY => {
+                    self.iny();
                 }
 
                 OpCodeCat::LDX => {
