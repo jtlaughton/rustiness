@@ -1478,6 +1478,112 @@ fn test_jmp_ind_bug() {
     assert_eq!(cpu.program_counter, 0xCCCF);
 }
 
+#[test]
+fn test_jsr() {
+    let mut cpu = CPU::new();
+
+    // The program we expect to run if it jumps
+    cpu.mem_write(0xCCCC, 0xa9);
+    cpu.mem_write(0xCCCD, 0x10);
+    cpu.mem_write(0xCCCE, 0x00);
+
+    // Call JSR with 0xCCCC as the target
+    cpu.load_and_run(vec![0x20, 0xCC, 0xCC, 0x00]);
+
+    // Jumping should run the "malicious" code
+    assert_eq!(cpu.register_a, 0x10);
+    assert_eq!(cpu.program_counter, 0xCCCF);
+
+    // Stack pointer should be appropriately decremented
+    assert_eq!(cpu.stack_pointer, 0xFB);
+
+    // Stack pointer should be incremented properly after performing this operation
+    // Also return should be the memory location of the next instruction - 1
+    let return_counter = cpu.stack_pop_u16();
+
+    assert_eq!(cpu.stack_pointer, 0xFD);
+
+    assert_eq!(return_counter, 0x8002);
+}
+
+/* LSR test cases */
+
+#[test]
+fn test_lsr_4a() {
+    let mut cpu = CPU::new();
+    cpu.load_and_run(vec![0xa9, 0b1111_1111, 0x4A, 0x00]);
+
+    assert_eq!(cpu.register_a, 0b0111_1111);
+    assert!(cpu.status.contains(CpuFlags::CARRY));
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_lsr_46() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0b0000_0001);
+    cpu.load_and_run(vec![0x46, 0x10, 0x00]);
+
+    let value = cpu.mem_read(0x10);
+
+    assert_eq!(value, 0);
+    assert!(cpu.status.contains(CpuFlags::CARRY));
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_lsr_56() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x10, 0b1111_1110);
+    cpu.load_and_run(vec![0xa2, 0x01, 0x56, 0x0f, 0x00]);
+
+    let value = cpu.mem_read(0x10);
+
+    assert_eq!(value, 0b0111_1111);
+    assert!(!cpu.status.contains(CpuFlags::CARRY));
+    assert!(!cpu.status.contains(CpuFlags::NEGATIVE));
+    assert!(!cpu.status.contains(CpuFlags::ZERO));
+}
+
+#[test]
+fn test_lsr_4e() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0x02);
+    cpu.load_and_run(vec![0x4e, 0x00, 0x10, 0x00]);
+
+    let value = cpu.mem_read(0x1000);
+
+    assert_eq!(value, 0x01);
+}
+
+#[test]
+fn test_lsr_5e() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0x02);
+    cpu.load_and_run(vec![0xa2, 0x01, 0x5e, 0xff, 0x0f, 0x00]);
+
+    let value = cpu.mem_read(0x1000);
+
+    assert_eq!(value, 0x01);
+}
+
+#[test]
+fn test_nop() {
+    let mut cpu = CPU::new();
+
+    cpu.load_and_run(vec![0xEA, 0x00]);
+
+    assert_eq!(cpu.register_a, 0);
+    assert_eq!(cpu.register_x, 0);
+    assert_eq!(cpu.register_y, 0);
+    // Because technically break flag should be set you have to acocunt for that
+    assert_eq!(cpu.status.bits, 0b110100);
+    assert_eq!(cpu.stack_pointer, 0xfd);
+    assert_eq!(cpu.program_counter, 0x8002);
+}
+
 //    #[test]
 //    fn test_lda_b9(){
 //         let mut cpu =  CPU::new();

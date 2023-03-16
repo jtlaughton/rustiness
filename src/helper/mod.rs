@@ -35,8 +35,12 @@ pub enum OpCodeCat {
     INY,
     JMP_ABS,
     JMP_IND,
+    JSR,
     LDX,
     LDY,
+    LSR_ACC,
+    LSR_MEM,
+    NOP,
     TAX,
     LDA,
     TAY,
@@ -865,6 +869,69 @@ impl EmmulationHelpers {
                 bytes: 3,
                 cycles: 5,
                 mode: AddressingMode::Indirect,
+            },
+
+            /* JSR Opcodes */
+            0x20 => OpCode {
+                code: 0x20,
+                code_name: "JSR",
+                match_code: OpCodeCat::JSR,
+                bytes: 3,
+                cycles: 6,
+                mode: AddressingMode::Absolute,
+            },
+
+            /* LSR Accumulator Opcodes */
+            0x4A => OpCode {
+                code: 0x4A,
+                code_name: "LSR",
+                match_code: OpCodeCat::LSR_ACC,
+                bytes: 1,
+                cycles: 2,
+                mode: AddressingMode::Accumulator,
+            },
+
+            /* LSR Memory Opcodes */
+            0x46 => OpCode {
+                code: 0x46,
+                code_name: "LSR",
+                match_code: OpCodeCat::LSR_MEM,
+                bytes: 2,
+                cycles: 5,
+                mode: AddressingMode::ZeroPage,
+            },
+            0x56 => OpCode {
+                code: 0x56,
+                code_name: "LSR",
+                match_code: OpCodeCat::LSR_MEM,
+                bytes: 2,
+                cycles: 6,
+                mode: AddressingMode::ZeroPage_X,
+            },
+            0x4E => OpCode {
+                code: 0x4E,
+                code_name: "LSR",
+                match_code: OpCodeCat::LSR_MEM,
+                bytes: 3,
+                cycles: 6,
+                mode: AddressingMode::Absolute,
+            },
+            0x5E => OpCode {
+                code: 0x5E,
+                code_name: "LSR",
+                match_code: OpCodeCat::LSR_MEM,
+                bytes: 3,
+                cycles: 7,
+                mode: AddressingMode::Absolute_X,
+            },
+
+            0xEA => OpCode {
+                code: 0xEA,
+                code_name: "NOP",
+                match_code: OpCodeCat::NOP,
+                bytes: 1,
+                cycles: 2,
+                mode: AddressingMode::NoneAddressing,
             },
 
             /* Default case so it still increments the program counter */
