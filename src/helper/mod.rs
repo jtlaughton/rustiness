@@ -33,6 +33,8 @@ pub enum OpCodeCat {
     EOR,
     INC,
     INY,
+    JMP_ABS,
+    JMP_IND,
     LDX,
     LDY,
     TAX,
@@ -56,6 +58,7 @@ pub enum AddressingMode {
     Absolute,
     Absolute_X,
     Absolute_Y,
+    Indirect,
     Indirect_X,
     Indirect_Y,
     Implied,
@@ -842,6 +845,26 @@ impl EmmulationHelpers {
                 bytes: 1,
                 cycles: 2,
                 mode: AddressingMode::Immediate,
+            },
+
+            /* JMP Absolute opcodes */
+            0x4C => OpCode {
+                code: 0x4C,
+                code_name: "JMP",
+                match_code: OpCodeCat::JMP_ABS,
+                bytes: 3,
+                cycles: 3,
+                mode: AddressingMode::Absolute,
+            },
+
+            /* JMP Indirect opcodes */
+            0x6c => OpCode {
+                code: 0x6C,
+                code_name: "JMP",
+                match_code: OpCodeCat::JMP_IND,
+                bytes: 3,
+                cycles: 5,
+                mode: AddressingMode::Indirect,
             },
 
             /* Default case so it still increments the program counter */

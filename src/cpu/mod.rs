@@ -143,6 +143,10 @@ impl CPU {
 
             AddressingMode::Accumulator => 0xffff,
 
+            AddressingMode::Indirect => {
+                panic!("mode {:?} is not supported", mode);
+            }
+
             AddressingMode::Implied => {
                 panic!("mode {:?} is not supported", mode);
             }
@@ -498,6 +502,27 @@ impl CPU {
 
                 OpCodeCat::INY => {
                     self.iny();
+                }
+
+                OpCodeCat::JMP_ABS => {
+                    let addr = self.mem_read_u16(self.program_counter);
+                    self.program_counter = addr;
+                }
+
+                OpCodeCat::JMP_IND => {
+                    let addr = self.mem_read_u16(self.program_counter);
+
+                    // Implement 6502 indirect jump bug
+
+                    let indirect_ref = if addr & 0x00FF == 0x00FF {
+                        let lo = self.mem_read(addr);
+                        let hi = self.mem_read(addr & 0xFF00);
+                        (hi as u16) << 8 | (lo as u16)
+                    } else {
+                        self.mem_read_u16(addr)
+                    };
+
+                    self.program_counter = indirect_ref;
                 }
 
                 OpCodeCat::LDX => {

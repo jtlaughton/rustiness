@@ -1425,6 +1425,59 @@ fn test_iny_c8_flags_zero() {
     assert!(cpu.status.contains(CpuFlags::ZERO));
 }
 
+/* JMP Absolute test cases */
+#[test]
+fn test_jmp_abs() {
+    let mut cpu = CPU::new();
+    cpu.mem_write(0x1000, 0xa9);
+    cpu.mem_write(0x1001, 0x10);
+    cpu.mem_write(0x1002, 0x00);
+    cpu.load_and_run(vec![0x4C, 0x00, 0x10]);
+
+    assert_eq!(cpu.register_a, 0x10);
+    assert_eq!(cpu.program_counter, 0x1003);
+}
+
+/* JMP Indirect test cases */
+#[test]
+fn test_jmp_ind_no_bug() {
+    let mut cpu = CPU::new();
+
+    cpu.mem_write_u16(0x1000, 0xCCCC);
+    cpu.mem_write(0xCCCC, 0xa9);
+    cpu.mem_write(0xCCCD, 0x10);
+    cpu.mem_write(0xCCCE, 0x00);
+    cpu.load_and_run(vec![0x6C, 0x00, 0x10, 0x00]);
+
+    assert_eq!(cpu.register_a, 0x10);
+    assert_eq!(cpu.program_counter, 0xCCCF);
+}
+
+#[test]
+fn test_jmp_ind_bug() {
+    let mut cpu = CPU::new();
+
+    cpu.mem_write_u16(0xCCFF, 0x1FCC);
+    cpu.mem_write(0xCC00, 0xCC);
+
+    // The program we expect to run because of the bug
+    // loads A with 0x10
+    cpu.mem_write(0xCCCC, 0xa9);
+    cpu.mem_write(0xCCCD, 0x10);
+    cpu.mem_write(0xCCCE, 0x00);
+
+    // The program it would run without the bug
+    // loads A with 0xFF
+    cpu.mem_write(0x1FCC, 0xa9);
+    cpu.mem_write(0x1FCD, 0xFF);
+    cpu.mem_write(0x1FCE, 0x00);
+
+    cpu.load_and_run(vec![0x6C, 0xFF, 0xCC, 0x00]);
+
+    assert_eq!(cpu.register_a, 0x10);
+    assert_eq!(cpu.program_counter, 0xCCCF);
+}
+
 //    #[test]
 //    fn test_lda_b9(){
 //         let mut cpu =  CPU::new();
